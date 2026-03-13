@@ -46,6 +46,7 @@ CP-AnemiC dataset/
 *.jpg
 *.png
 *.zip
+!static/doctor-reviewing-patient.png
 
 # ---------------------------
 # Logs

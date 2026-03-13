@@ -1,5 +1,5 @@
 // Render backend used by the deployed Vercel frontend.
-const API_BASE_URL = "https://detection-of-anemia.onrender.com";
+const API_BASE_URL = "https://anemia-detection-kat7.onrender.com";
 
 let selectedFile = null;
 
