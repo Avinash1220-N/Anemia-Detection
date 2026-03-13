@@ -20,6 +20,10 @@ const diagnosisBadge = document.getElementById("diagnosisBadge");
 const riskLevel = document.getElementById("riskLevel");
 const clinicalSummary = document.getElementById("clinicalSummary");
 const medicalNotes = document.getElementById("medicalNotes");
+const riskInterpretation = document.getElementById("riskInterpretation");
+const suggestedTests = document.getElementById("suggestedTests");
+const symptomChecklist = document.getElementById("symptomChecklist");
+const dietGuidance = document.getElementById("dietGuidance");
 const loadingOverlay = document.getElementById("loadingOverlay");
 
 // =============================
@@ -189,11 +193,142 @@ function buildClinicalNotes(result, severity, confidencePercent) {
     `;
 }
 
+function buildCarePlan(result, severity, confidencePercent) {
+    if (result.toLowerCase() === "normal") {
+        return {
+            interpretation: `
+                <p>Low AI screening concern for anemia on this image.</p>
+                <ul>
+                    <li>Model confidence: ${confidencePercent}%.</li>
+                    <li>No visual anemia pattern was flagged by the screening model.</li>
+                </ul>
+            `,
+            tests: `
+                <ul>
+                    <li>No urgent testing suggested from this screen alone.</li>
+                    <li>Consider CBC only if symptoms, prior anemia history, or clinician concern are present.</li>
+                </ul>
+            `,
+            symptoms: `
+                <ul>
+                    <li>Monitor fatigue or weakness.</li>
+                    <li>Watch for dizziness or headaches.</li>
+                    <li>Review with a clinician if pallor or breathlessness develops.</li>
+                </ul>
+            `,
+            diet: `
+                <ul>
+                    <li>Maintain iron-rich foods such as leafy greens, legumes, beans, eggs, and lean meats.</li>
+                    <li>Include vitamin C sources to support iron absorption.</li>
+                    <li>Keep regular meals with protein, folate, and vitamin B12 sources.</li>
+                </ul>
+            `
+        };
+    }
+
+    if (severity.toLowerCase() === "severe") {
+        return {
+            interpretation: `
+                <p>High-risk AI screening result for anemia.</p>
+                <ul>
+                    <li>This pattern deserves prompt clinical evaluation.</li>
+                    <li>Confidence on this screen: ${confidencePercent}%.</li>
+                </ul>
+            `,
+            tests: `
+                <ul>
+                    <li>CBC with hemoglobin and hematocrit.</li>
+                    <li>Ferritin, serum iron, TIBC, and transferrin saturation.</li>
+                    <li>Reticulocyte count, B12, and folate if clinically indicated.</li>
+                </ul>
+            `,
+            symptoms: `
+                <ul>
+                    <li>Severe fatigue or weakness.</li>
+                    <li>Shortness of breath, palpitations, or chest discomfort.</li>
+                    <li>Dizziness, fainting, or worsening exercise intolerance.</li>
+                </ul>
+            `,
+            diet: `
+                <ul>
+                    <li>Do not rely on diet alone for a high-risk result.</li>
+                    <li>Use clinician guidance before starting supplements.</li>
+                    <li>Focus on iron, folate, B12, hydration, and protein while awaiting evaluation.</li>
+                </ul>
+            `
+        };
+    }
+
+    if (severity.toLowerCase() === "moderate") {
+        return {
+            interpretation: `
+                <p>Moderate AI screening concern for anemia.</p>
+                <ul>
+                    <li>Further lab review would be appropriate.</li>
+                    <li>Confidence on this screen: ${confidencePercent}%.</li>
+                </ul>
+            `,
+            tests: `
+                <ul>
+                    <li>CBC and hemoglobin check.</li>
+                    <li>Iron profile and ferritin if advised.</li>
+                    <li>Review for blood loss, menstrual history, or chronic illness.</li>
+                </ul>
+            `,
+            symptoms: `
+                <ul>
+                    <li>Tiredness or low stamina.</li>
+                    <li>Headaches or dizziness.</li>
+                    <li>Pale appearance or reduced concentration.</li>
+                </ul>
+            `,
+            diet: `
+                <ul>
+                    <li>Increase iron-rich foods like spinach, lentils, beans, eggs, and lean meats.</li>
+                    <li>Add citrus or other vitamin C foods with meals.</li>
+                    <li>Review B12 and folate intake with a clinician if needed.</li>
+                </ul>
+            `
+        };
+    }
+
+    return {
+        interpretation: `
+            <p>Mild AI screening concern for anemia.</p>
+            <ul>
+                <li>This may be an early or lower-risk pattern.</li>
+                <li>Confidence on this screen: ${confidencePercent}%.</li>
+            </ul>
+        `,
+        tests: `
+            <ul>
+                <li>Consider CBC and hemoglobin testing if symptoms are present.</li>
+                <li>Discuss follow-up timing with a healthcare professional.</li>
+            </ul>
+        `,
+        symptoms: `
+            <ul>
+                <li>Mild fatigue or weakness.</li>
+                <li>Dizziness or headaches.</li>
+                <li>Pallor or reduced exercise tolerance.</li>
+            </ul>
+        `,
+        diet: `
+            <ul>
+                <li>Increase iron-rich foods and pair them with vitamin C sources.</li>
+                <li>Review intake of folate and vitamin B12.</li>
+                <li>Stay consistent with balanced meals and hydration.</li>
+            </ul>
+        `
+    };
+}
+
 function showResults(data) {
     const confidencePercent = (data.confidence * 100).toFixed(2);
     const isAnemic = data.result.toLowerCase() === "anemic";
     const severity = getSeverityLabel(data, isAnemic);
     const theme = getResultTheme(isAnemic, severity);
+    const carePlan = buildCarePlan(data.result, severity, confidencePercent);
 
     resultText.innerText = data.result;
     confidenceText.innerText = confidencePercent + "%";
@@ -220,6 +355,10 @@ function showResults(data) {
         : "No anemia pattern detected on this screening image.";
 
     medicalNotes.innerHTML = buildClinicalNotes(data.result, severity, confidencePercent);
+    if (riskInterpretation) riskInterpretation.innerHTML = carePlan.interpretation;
+    if (suggestedTests) suggestedTests.innerHTML = carePlan.tests;
+    if (symptomChecklist) symptomChecklist.innerHTML = carePlan.symptoms;
+    if (dietGuidance) dietGuidance.innerHTML = carePlan.diet;
     resultsSection.style.display = "block";
 }
 
