@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-Powered Anemia Detection System</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: Inter, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(220, 38, 38, 0.14), transparent 45%),
+        linear-gradient(180deg, #f8fafc, #e2e8f0);
+      color: #0f172a;
+    }
+
+    .loading-card {
+      width: min(480px, calc(100vw - 2rem));
+      padding: 2rem;
+      border-radius: 1.5rem;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+      text-align: center;
+    }
+
+    .loading-card h1 {
+      margin: 0 0 0.75rem;
+      font-size: 1.5rem;
+    }
+
+    .loading-card p {
+      margin: 0;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-card">
+    <h1>Loading Crimson Eye</h1>
+    <p>Preparing the AI-powered anemia detection dashboard...</p>
+  </div>
+
+  <script>
+    const replacements = [
+      ["{{ url_for('static', filename='style.css') }}", "./style.css"],
+      ["{{ url_for('static', filename='script.js') }}", "./script.js"],
+      ["{{ url_for('project_asset', filename='Doctor Review ing patient.png') }}", "./Doctor%20Review%20ing%20patient.png"]
+    ];
+
+    async function bootstrap() {
+      const response = await fetch("./templates/index.html", { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("Unable to load the frontend template.");
+      }
+
+      let html = await response.text();
+      for (const [from, to] of replacements) {
+        html = html.replaceAll(from, to);
+      }
+
+      document.open();
+      document.write(html);
+      document.close();
+    }
+
+    bootstrap().catch((error) => {
+      console.error(error);
+      document.querySelector(".loading-card p").textContent =
+        "The dashboard could not be loaded. Check that Vercel is serving templates/index.html.";
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🏥 Medical AI - Anemia Detection System</title>
+  <!-- Tailwind for utility-based layout and spacing -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div class="background-overlay"></div>
+
+  <!-- SIGN-IN OVERLAY (shown first, hides after auth) -->
+  <div id="authContainer" class="min-h-screen flex items-center justify-center px-4 py-10">
+    <div class="max-w-5xl w-full grid md:grid-cols-2 gap-8 items-center">
+      <!-- Left: medical illustration -->
+      <div class="space-y-4">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-red-600 to-teal-500 text-white text-xs shadow-lg medical-pulse">
+          <span class="text-lg">🩺</span>
+          <span class="tracking-wide uppercase">Crimson Eye – AI Medical</span>
+        </div>
+        <div class="rounded-3xl bg-white/80 shadow-2xl border border-slate-200 p-6 flex gap-4 items-center login-title-card">
+          <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-red-600 via-teal-500 to-emerald-500 flex items-center justify-center text-4xl text-white shadow-xl">
+            <span class="medical-pulse">👨‍⚕️</span>
+          </div>
+          <div>
+            <h1 class="text-2xl font-semibold text-slate-900 title-fade">
+              Crimson Eye – AI Anemia Detection System
+            </h1>
+            <p class="mt-2 text-sm text-slate-600 subtitle-fade">
+              Early anemia detection using conjunctiva image analysis and artificial intelligence.
+            </p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 text-sm text-slate-600">
+          <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/90 shadow-sm border border-slate-200 login-feature-tag" onclick="createRipple(event)">
+            <span class="feature-icon">💉</span> <span>Hospital-grade workflows</span>
+          </span>
+          <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/90 shadow-sm border border-slate-200 login-feature-tag" onclick="createRipple(event)">
+            <span class="feature-icon">🧬</span> <span>AI-powered risk scoring</span>
+          </span>
+          <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/90 shadow-sm border border-slate-200 login-feature-tag" onclick="createRipple(event)">
+            <span class="feature-icon">🩸</span> <span>Hemoglobin insights</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Right: authentication card -->
+      <div class="rounded-3xl bg-white/95 shadow-2xl border border-slate-200 p-6 sm:p-8 login-card">
+        <div class="mb-5">
+          <h2 class="text-xl font-semibold text-slate-900 flex items-center gap-2">
+            <span>🩺 Welcome to Crimson Eye</span>
+          </h2>
+          <p class="mt-1 text-xs text-slate-500">
+            AI-powered anemia detection using conjunctiva analysis.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <button id="googleSignIn" class="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white border border-slate-200 text-sm font-semibold shadow-sm hover:shadow-lg hover:-translate-y-[1px] transition">
+            <span class="text-lg">🔍</span>
+            <span>Continue with Google</span>
+          </button>
+
+          <button id="emailToggle" class="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow-md hover:shadow-xl hover:-translate-y-[1px] transition">
+            <span class="text-lg">📧</span>
+            <span id="emailToggleLabel">Sign in with Email</span>
+          </button>
+        </div>
+
+        <!-- Email area -->
+        <div id="emailArea" class="mt-4 space-y-3 hidden">
+          <div class="space-y-1">
+            <label for="emailInput" class="text-xs font-medium text-slate-600 flex items-center gap-1">
+              <span>Clinical email</span>
+              <span class="text-[10px] text-slate-400">(e.g. you@hospital.org)</span>
+            </label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 text-xs">
+                <i class="fas fa-envelope"></i>
+              </span>
+              <input id="emailInput" type="email" class="w-full pl-9 pr-4 py-2.5 rounded-xl border-2 border-slate-200 text-sm bg-white/90 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20" placeholder="you@clinic.com" />
+            </div>
+          </div>
+          <div class="space-y-1">
+            <label for="passwordInput" class="text-xs font-medium text-slate-600 flex items-center gap-1">
+              <span>Password</span>
+              <span class="text-[10px] text-slate-400">Min 6 characters</span>
+            </label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 text-xs">
+                <i class="fas fa-lock"></i>
+              </span>
+              <input id="passwordInput" type="password" class="w-full pl-9 pr-4 py-2.5 rounded-xl border-2 border-slate-200 text-sm bg-white/90 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20" placeholder="Enter password" />
+            </div>
+          </div>
+          <div id="confirmPasswordGroup" class="space-y-1 hidden">
+            <label for="confirmPasswordInput" class="text-xs font-medium text-slate-600 flex items-center gap-1">
+              <span>Confirm Password</span>
+            </label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 text-xs">
+                <i class="fas fa-lock"></i>
+              </span>
+              <input id="confirmPasswordInput" type="password" class="w-full pl-9 pr-4 py-2.5 rounded-xl border-2 border-slate-200 text-sm bg-white/90 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20" placeholder="Re-enter password" />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-slate-500">
+            <button id="forgotPassword" type="button" class="text-teal-600 hover:text-teal-800 font-medium">
+              Forgot Password?
+            </button>
+          </div>
+
+          <button id="emailPrimaryBtn" class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-[#C0392B] to-teal-500 text-white text-sm font-semibold shadow-md hover:shadow-xl hover:-translate-y-[1px] transition">
+            <span class="text-lg">✅</span>
+            <span id="emailPrimaryLabel">Sign In</span>
+          </button>
+        </div>
+
+        <p class="mt-3 text-xs text-center text-slate-500">
+          <span id="modeHelperText">Don't have an account?</span>
+          <button id="toggleModeLink" type="button" class="text-teal-600 font-semibold hover:text-teal-800 underline underline-offset-2">
+            Create New Account
+          </button>
+        </p>
+
+        <p id="authStatus" class="mt-4 text-xs text-center text-slate-500">
+          🛡️ Your medical data is protected with secure authentication.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN DASHBOARD CONTAINER (hidden until authenticated) -->
+  <div class="container" id="mainContainer" style="display:none;">
+    <!-- HERO / HEADER -->
+    <header class="header">
+      <div class="flex items-start justify-between gap-4">
+        <div class="hero hero--no-image">
+          <div class="hero-left">
+            <div class="medical-logo">
+              <div class="logo-icon"><i class="fas fa-stethoscope"></i></div>
+              <div class="logo-text">
+                <h1>AI-Powered Anemia Detection System</h1>
+                <p>Hospital-grade Medical AI Platform</p>
+              </div>
+            </div>
+            <div class="hero-copy">
+              <h2>Early anemia risk screening using conjunctiva image analysis.</h2>
+              <p>
+                Upload lower-eyelid conjunctiva images to receive AI-assisted anemia risk
+                insights, confidence scores, and clinically-aligned recommendations in seconds.
+              </p>
+              <div class="flex flex-wrap gap-3 mt-2">
+                <button class="btn btn-primary btn-hero" id="heroStartBtn">
+                  <i class="fas fa-heartbeat"></i> Start Diagnosis
+                </button>
+                <button class="btn btn-secondary btn-hero" id="learnMoreBtn">
+                  <i class="fas fa-info-circle"></i> Learn How It Works
+                </button>
+              </div>
+            </div>
+
+            <div class="feature-icons">
+              <div class="feature-chip">
+                <i class="fas fa-shield-alt"></i>
+                <span>HIPAA Compliant</span>
+              </div>
+              <div class="feature-chip">
+                <i class="fas fa-brain"></i>
+                <span>AI Powered Diagnosis</span>
+              </div>
+              <div class="feature-chip">
+                <i class="fas fa-wave-square"></i>
+                <span>Real-Time Clinical Analysis</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard user header -->
+        <div class="user-menu">
+          <div class="user-info">
+            <i class="fas fa-user-md"></i>
+            <span id="userEmailLabel">Clinician</span>
+          </div>
+          <button id="signOutBtn" class="btn btn-secondary btn-small">
+            <i class="fas fa-sign-out-alt"></i> Sign out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- FEATURE CARDS -->
+    <section class="features-section">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-user-shield"></i></div>
+        <h3>HIPAA Compliant</h3>
+        <p>Designed with healthcare data security and privacy-first workflows.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-brain"></i></div>
+        <h3>AI Powered Diagnosis</h3>
+        <p>Deep learning models tailored for conjunctiva-based anemia screening.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-wave-square"></i></div>
+        <h3>Real-Time Clinical Analysis</h3>
+        <p>Instant risk stratification and clinical recommendations at bedside.</p>
+      </div>
+    </section>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- UPLOAD DIAGNOSTIC SECTION -->
+      <section class="upload-section">
+        <div class="upload-card">
+          <div class="card-header">
+            <div class="header-icon"><i class="fas fa-microscope"></i></div>
+            <div class="header-content">
+              <h2>Conjunctiva Clinical Analysis</h2>
+              <p>Upload a clear image of the lower eyelid conjunctiva for AI-powered anemia assessment.</p>
+            </div>
+          </div>
+
+          <div class="upload-layout">
+            <div class="upload-area" id="uploadArea">
+              <div class="upload-placeholder" id="uploadPlaceholder">
+                <div class="upload-icon"><i class="fas fa-eye"></i></div>
+                <h3>Drop Conjunctiva Image for AI Diagnosis</h3>
+                <p>Drag & drop your image here or click to browse from device.</p>
+                <div class="file-info">
+                  <span><i class="fas fa-check-circle"></i> Supported: JPG, PNG, JPEG</span>
+                  <span><i class="fas fa-info-circle"></i> Max size: 10MB</span>
+                </div>
+                <button class="btn btn-primary" id="chooseBtn">
+                  <i class="fas fa-folder-open"></i> Upload Image
+                </button>
+              </div>
+              <input type="file" id="fileInput" accept="image/*" hidden />
+            </div>
+
+            <div class="upload-illustration">
+              <img src="{{ url_for('project_asset', filename='Doctor Review ing patient.png') }}"
+                   alt="Doctor reviewing patient" />
+              <div class="upload-annotation">
+                <i class="fas fa-notes-medical"></i>
+                <span>Ensure good lighting and focus on the lower eyelid conjunctiva.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn btn-secondary" id="uploadBtn" disabled>
+              <i class="fas fa-upload"></i> Upload
+            </button>
+            <button class="btn btn-primary" id="detectBtn" disabled>
+              <i class="fas fa-search-plus"></i> Analyze with AI
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PREVIEW SECTION -->
+      <section class="preview-section" id="previewSection" style="display:none;">
+        <div class="preview-card">
+          <div class="card-header">
+            <div class="header-icon"><i class="fas fa-image"></i></div>
+            <div class="header-content">
+              <h2>Image Preview</h2>
+              <p>Confirm the clinical quality of the conjunctiva image before analysis.</p>
+            </div>
+          </div>
+          <div class="image-container">
+            <img id="preview" src="" alt="Preview will appear here" />
+            <div class="image-overlay">
+              <button class="btn btn-small" id="changeImageBtn">
+                <i class="fas fa-edit"></i> Change Image
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESULTS SECTION -->
+      <section class="results-section" id="resultsSection" style="display:none;">
+        <div class="results-card">
+          <div class="card-header">
+            <div class="header-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="header-content">
+              <h2>AI Diagnostic Summary</h2>
+              <p>Structured anemia risk profile with confidence and recommendations.</p>
+            </div>
+          </div>
+          <div class="result-content">
+            <div class="result-indicator" id="resultIndicator">
+              <!-- Filled dynamically -->
+            </div>
+
+            <div class="result-grid">
+              <div class="result-badge-card">
+                <h3>AI Prediction</h3>
+                <div class="diagnosis-badge" id="diagnosisBadge">-</div>
+              </div>
+              <div class="result-badge-card">
+                <h3>Hemoglobin Risk Level</h3>
+                <div class="risk-pill" id="riskLevel">-</div>
+              </div>
+              <div class="result-badge-card">
+                <h3>Confidence Score</h3>
+                <div class="confidence-score">
+                  <span id="confidence">-</span>
+                  <small>model confidence</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="gauge-wrapper">
+              <div class="gauge-label">
+                <span>Hemoglobin Risk Gauge</span>
+                <span id="meterValue">0%</span>
+              </div>
+              <div class="gauge-bar">
+                <div class="gauge-fill" id="confidenceFill"></div>
+              </div>
+              <div class="gauge-legend">
+                <span class="legend-normal">Normal</span>
+                <span class="legend-mild">Mild</span>
+                <span class="legend-moderate">Moderate</span>
+                <span class="legend-severe">Severe</span>
+              </div>
+            </div>
+
+            <div class="clinical-meta">
+              <div class="meta-item">
+                <div class="meta-icon"><i class="fas fa-tint"></i></div>
+                <div class="meta-text">
+                  <span class="label">Blood Indicator</span>
+                  <span class="value" id="result">-</span>
+                </div>
+              </div>
+              <div class="meta-item">
+                <div class="meta-icon"><i class="fas fa-notes-medical"></i></div>
+                <div class="meta-text">
+                  <span class="label">Clinical Recommendation</span>
+                  <span class="value" id="clinicalSummary">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="medical-notes">
+              <h4><i class="fas fa-info-circle"></i> Detailed Clinical Notes</h4>
+              <div class="notes-content" id="medicalNotes"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+      <div class="loading-content">
+        <div class="medical-loader"><div class="loader-icon"><i class="fas fa-heartbeat"></i></div></div>
+        <h3>Analyzing Image</h3>
+        <p>Our AI is examining the conjunctiva for signs of anemia...</p>
+        <div class="loading-progress"><div class="progress-bar"><div class="progress-fill"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Chatbot Widget (dashboard only) -->
+    <div class="chatbot-container" id="chatbotContainer">
+      <div class="chatbot-header" id="chatbotHeader">
+        <div class="flex items-center gap-2">
+          <span>Medical AI Assistant</span>
+          <span class="chatbot-status-dot"></span>
+          <span class="chatbot-status-text">Online</span>
+        </div>
+        <button id="chatbotToggle"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="chatbot-messages" id="chatbotMessages"></div>
+      <div class="chatbot-typing" id="chatbotTyping" style="display:none;">AI is typing...</div>
+      <div class="chatbot-input-area">
+        <input type="text" id="chatbotInput" placeholder="Ask about anemia, results, etc." />
+        <button id="chatbotSend"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+    <!-- Floating button to open chatbot -->
+    <button id="openChatbotBtn" class="btn btn-primary">Chat with AI</button>
+  </div>
+
+  <!-- How It Works Modal -->
+  <div id="howItWorksModal" class="how-modal-backdrop" style="display:none;">
+    <div class="how-modal">
+      <div class="how-modal-header">
+        <h3><i class="fas fa-brain"></i> How the Anemia Detection AI Works</h3>
+        <button id="closeHowModal" class="how-modal-close"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="how-modal-body">
+        <ol>
+          <li><strong>Conjunctiva Image Capture:</strong> A clear image of the lower eyelid conjunctiva is uploaded from the clinical environment.</li>
+          <li><strong>Preprocessing:</strong> The system normalizes color, resizes the image, and prepares it for the deep learning model.</li>
+          <li><strong>AI Inference:</strong> A trained convolutional neural network estimates anemia risk based on conjunctival pallor patterns.</li>
+          <li><strong>Risk Stratification:</strong> The model outputs a prediction, confidence score, and an approximate severity band (Normal, Mild, Moderate, Severe).</li>
+          <li><strong>Clinical Decision Support:</strong> The dashboard presents structured recommendations that should always be reviewed by a licensed clinician before action.</li>
+        </ol>
+        <p class="how-modal-note">
+          This tool is intended for <strong>screening and educational purposes only</strong> and must not replace professional medical diagnosis or laboratory testing.
+        </p>
+      </div>
+      <div class="how-modal-footer">
+        <button id="howModalCloseBtn" class="btn btn-primary">Got it, continue to diagnosis</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase auth + page-level auth gate -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import {
+      getAuth,
+      signInWithPopup,
+      GoogleAuthProvider,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      sendPasswordResetEmail,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDGBSFV1MXwBJHlR1xuP2Kh6IZUejQXhmg",
+      authDomain: "crimson-eye-8f285.firebaseapp.com",
+      projectId: "crimson-eye-8f285",
+      storageBucket: "crimson-eye-8f285.firebasestorage.app",
+      messagingSenderId: "12363798928",
+      appId: "1:12363798928:web:28a63accd0f10024707b15",
+      measurementId: "G-85G33159B8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const googleProvider = new GoogleAuthProvider();
+
+    const authContainer = document.getElementById("authContainer");
+    const mainContainer = document.getElementById("mainContainer");
+    const googleBtn = document.getElementById("googleSignIn");
+    const emailToggle = document.getElementById("emailToggle");
+    const emailToggleLabel = document.getElementById("emailToggleLabel");
+    const emailArea = document.getElementById("emailArea");
+    const emailPrimaryBtn = document.getElementById("emailPrimaryBtn");
+    const emailPrimaryLabel = document.getElementById("emailPrimaryLabel");
+    const emailInput = document.getElementById("emailInput");
+    const passwordInput = document.getElementById("passwordInput");
+    const confirmPasswordInput = document.getElementById("confirmPasswordInput");
+    const confirmPasswordGroup = document.getElementById("confirmPasswordGroup");
+    const forgotPasswordBtn = document.getElementById("forgotPassword");
+    const modeHelperText = document.getElementById("modeHelperText");
+    const toggleModeLink = document.getElementById("toggleModeLink");
+    const userEmailLabel = document.getElementById("userEmailLabel");
+    const signOutBtn = document.getElementById("signOutBtn");
+    const authStatus = document.getElementById("authStatus");
+
+    let authMode = "signin"; // or "signup"
+
+    function setAuthStatus(msg, type = "info") {
+      if (!authStatus) return;
+      authStatus.textContent = msg;
+      authStatus.className =
+        "mt-4 text-xs text-center " +
+        (type === "error"
+          ? "text-red-600"
+          : type === "success"
+          ? "text-emerald-600"
+          : "text-slate-500");
+    }
+
+    function applyModeUI() {
+      if (authMode === "signin") {
+        if (confirmPasswordGroup) confirmPasswordGroup.classList.add("hidden");
+        if (emailPrimaryLabel) emailPrimaryLabel.textContent = "Sign In";
+        if (emailToggleLabel) emailToggleLabel.textContent = "Sign in with Email";
+        if (modeHelperText) modeHelperText.textContent = "Don't have an account?";
+        if (toggleModeLink) toggleModeLink.textContent = "Create New Account";
+      } else {
+        if (confirmPasswordGroup) confirmPasswordGroup.classList.remove("hidden");
+        if (emailPrimaryLabel) emailPrimaryLabel.textContent = "Create Account";
+        if (emailToggleLabel) emailToggleLabel.textContent = "Create account with Email";
+        if (modeHelperText) modeHelperText.textContent = "Already have an account?";
+        if (toggleModeLink) toggleModeLink.textContent = "Sign In";
+      }
+    }
+
+    function showDashboard(user) {
+      if (authContainer) authContainer.style.display = "none";
+      if (mainContainer) mainContainer.style.display = "block";
+      if (userEmailLabel && user && user.email) {
+        userEmailLabel.textContent = user.email;
+      }
+      if (window.showMainApp) {
+        window.showMainApp();
+      }
+    }
+
+    function showSignIn() {
+      if (mainContainer) mainContainer.style.display = "none";
+      if (authContainer) authContainer.style.display = "flex";
+    }
+
+    async function handleGoogle() {
+      try {
+        setAuthStatus("Signing in with Google…", "info");
+        await signInWithPopup(auth, googleProvider);
+      } catch (err) {
+        console.error(err);
+        setAuthStatus(err.message || "Google sign‑in failed.", "error");
+      }
+    }
+
+    async function handleEmail() {
+      const email = (emailInput?.value || "").trim();
+      const password = (passwordInput?.value || "").trim();
+      const confirmPassword = (confirmPasswordInput?.value || "").trim();
+
+      if (!email || !password) {
+        setAuthStatus("Please enter both email and password.", "error");
+        return;
+      }
+
+      if (authMode === "signup" && password !== confirmPassword) {
+        setAuthStatus("Passwords do not match.", "error");
+        return;
+      }
+
+      if (authMode === "signin") {
+        try {
+          setAuthStatus("Signing you in…", "info");
+          await signInWithEmailAndPassword(auth, email, password);
+          setAuthStatus("Welcome back.", "success");
+        } catch (err) {
+          console.error(err);
+          const code = err?.code || "";
+          if (code === "auth/user-not-found" || code === "auth/invalid-credential") {
+            setAuthStatus("No account found for this email. Try creating a new account.", "error");
+          } else if (code === "auth/wrong-password") {
+            setAuthStatus("Incorrect password. Please try again.", "error");
+          } else {
+            let msg = err.message || "Email sign‑in failed.";
+            setAuthStatus(msg, "error");
+          }
+        }
+      } else {
+        try {
+          setAuthStatus("Creating your secure account…", "info");
+          await createUserWithEmailAndPassword(auth, email, password);
+          setAuthStatus("Account created successfully.", "success");
+        } catch (err) {
+          console.error(err);
+          const code = err?.code || "";
+          let msg = "Unable to create account. Please try again.";
+          if (code === "auth/email-already-in-use") {
+            msg = "This email is already in use. Try signing in instead.";
+          } else if (code === "auth/weak-password") {
+            msg = "Password is too weak. Please use at least 6 characters.";
+          }
+          setAuthStatus(msg, "error");
+        }
+      }
+    }
+
+    async function handleForgotPassword() {
+      const email = (emailInput?.value || "").trim();
+      if (!email) {
+        setAuthStatus("Enter your email to receive a reset link.", "error");
+        return;
+      }
+      try {
+        setAuthStatus("Sending password reset email…", "info");
+        await sendPasswordResetEmail(auth, email);
+        setAuthStatus("Password reset email sent.", "success");
+      } catch (err) {
+        console.error(err);
+        setAuthStatus(err.message || "Failed to send reset email.", "error");
+      }
+    }
+
+    if (googleBtn) googleBtn.addEventListener("click", handleGoogle);
+    if (emailToggle) {
+      emailToggle.addEventListener("click", () => {
+        if (!emailArea) return;
+        const isHidden = emailArea.classList.contains("hidden");
+        emailArea.classList.toggle("hidden", !isHidden);
+        if (!isHidden) {
+          setAuthStatus("🛡️ Your medical data is protected with secure authentication.", "info");
+        }
+      });
+    }
+    if (emailPrimaryBtn) emailPrimaryBtn.addEventListener("click", handleEmail);
+    if (forgotPasswordBtn) forgotPasswordBtn.addEventListener("click", handleForgotPassword);
+
+    if (toggleModeLink) {
+      toggleModeLink.addEventListener("click", () => {
+        authMode = authMode === "signin" ? "signup" : "signin";
+        applyModeUI();
+        setAuthStatus("🛡️ Your medical data is protected with secure authentication.", "info");
+        if (emailArea && emailArea.classList.contains("hidden")) {
+          emailArea.classList.remove("hidden");
+        }
+      });
+    }
+
+    if (signOutBtn) {
+      signOutBtn.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+          setAuthStatus("You have been signed out.", "info");
+        } catch (err) {
+          console.error(err);
+          setAuthStatus("Failed to sign out. Please try again.", "error");
+        }
+      });
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setAuthStatus("Authenticated. Loading dashboard…", "success");
+        applyModeUI();
+        showDashboard(user);
+      } else {
+        authMode = "signin";
+        applyModeUI();
+        setAuthStatus("🛡️ Your medical data is protected with secure authentication.", "info");
+        showSignIn();
+      }
+    });
+  </script>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
