@@ -24,7 +24,9 @@ const riskInterpretation = document.getElementById("riskInterpretation");
 const suggestedTests = document.getElementById("suggestedTests");
 const symptomChecklist = document.getElementById("symptomChecklist");
 const dietGuidance = document.getElementById("dietGuidance");
+const downloadSummaryBtn = document.getElementById("downloadSummaryBtn");
 const loadingOverlay = document.getElementById("loadingOverlay");
+let latestResultSnapshot = null;
 
 // =============================
 // FILE SELECT
@@ -323,6 +325,65 @@ function buildCarePlan(result, severity, confidencePercent) {
     };
 }
 
+function htmlBlockToLines(html) {
+    const container = document.createElement("div");
+    container.innerHTML = html;
+
+    return Array.from(container.querySelectorAll("p, li"))
+        .map((node) => node.textContent.trim())
+        .filter(Boolean);
+}
+
+function buildDownloadText(snapshot) {
+    const sections = [
+        "AI-Powered Anemia Detection Summary",
+        "",
+        `Prediction: ${snapshot.result}`,
+        `Risk Level: ${snapshot.severity}`,
+        `Confidence: ${snapshot.confidencePercent}%`,
+        `Indicator: ${snapshot.indicatorText}`,
+        `Clinical Recommendation: ${snapshot.clinicalSummary}`,
+        "",
+        "Risk Interpretation:",
+        ...htmlBlockToLines(snapshot.carePlan.interpretation).map((line) => `- ${line}`),
+        "",
+        "Suggested Tests:",
+        ...htmlBlockToLines(snapshot.carePlan.tests).map((line) => `- ${line}`),
+        "",
+        "Symptom Checklist:",
+        ...htmlBlockToLines(snapshot.carePlan.symptoms).map((line) => `- ${line}`),
+        "",
+        "Diet Support:",
+        ...htmlBlockToLines(snapshot.carePlan.diet).map((line) => `- ${line}`),
+        "",
+        "Detailed Clinical Notes:",
+        ...htmlBlockToLines(snapshot.notesHtml).map((line) => `- ${line}`),
+        "",
+        "Important: This AI result is for screening support only and is not a medical diagnosis. Please consult a healthcare professional."
+    ];
+
+    return sections.join("\n");
+}
+
+function downloadResultSummary() {
+    if (!latestResultSnapshot) return;
+
+    const fileContent = buildDownloadText(latestResultSnapshot);
+    const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const safeDate = new Date().toISOString().slice(0, 10);
+
+    link.href = objectUrl;
+    link.download = `anemia-screening-summary-${safeDate}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(objectUrl);
+}
+
+downloadSummaryBtn?.addEventListener("click", downloadResultSummary);
+
 function showResults(data) {
     const confidencePercent = (data.confidence * 100).toFixed(2);
     const isAnemic = data.result.toLowerCase() === "anemic";
@@ -354,11 +415,27 @@ function showResults(data) {
         ? `Possible ${severity.toLowerCase()} anemia pattern detected. Please consult a clinician.`
         : "No anemia pattern detected on this screening image.";
 
-    medicalNotes.innerHTML = buildClinicalNotes(data.result, severity, confidencePercent);
+    const notesHtml = buildClinicalNotes(data.result, severity, confidencePercent);
+    medicalNotes.innerHTML = notesHtml;
     if (riskInterpretation) riskInterpretation.innerHTML = carePlan.interpretation;
     if (suggestedTests) suggestedTests.innerHTML = carePlan.tests;
     if (symptomChecklist) symptomChecklist.innerHTML = carePlan.symptoms;
     if (dietGuidance) dietGuidance.innerHTML = carePlan.diet;
+
+    latestResultSnapshot = {
+        result: data.result,
+        severity,
+        confidencePercent,
+        indicatorText: theme.indicatorText,
+        clinicalSummary: clinicalSummary.innerText,
+        carePlan,
+        notesHtml
+    };
+
+    if (downloadSummaryBtn) {
+        downloadSummaryBtn.disabled = false;
+    }
+
     resultsSection.style.display = "block";
 }
 

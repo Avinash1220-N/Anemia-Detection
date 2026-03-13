@@ -1274,6 +1274,14 @@ body::before {
   .care-grid {
     grid-template-columns: 1fr;
   }
+
+  .result-tools {
+    justify-content: stretch;
+  }
+
+  .result-download-btn {
+    width: 100%;
+  }
   
   .card-header {
     flex-direction: column;
@@ -1489,6 +1497,24 @@ body::before {
   font-weight: 500;
 }
 
+.screening-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin: 18px 0 22px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(254, 249, 195, 0.85), rgba(255, 237, 213, 0.92));
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #92400e;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.screening-disclaimer i {
+  margin-top: 2px;
+}
+
 .care-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1503,6 +1529,22 @@ body::before {
   border: 1px solid rgba(203, 213, 225, 0.9);
 }
 
+.care-card--risk {
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.98), rgba(248, 250, 252, 0.96));
+}
+
+.care-card--tests {
+  background: linear-gradient(135deg, rgba(240, 253, 250, 0.98), rgba(248, 250, 252, 0.96));
+}
+
+.care-card--symptoms {
+  background: linear-gradient(135deg, rgba(255, 247, 237, 0.98), rgba(248, 250, 252, 0.96));
+}
+
+.care-card--diet {
+  background: linear-gradient(135deg, rgba(240, 253, 244, 0.98), rgba(248, 250, 252, 0.96));
+}
+
 .care-card h4 {
   display: flex;
   align-items: center;
@@ -1513,6 +1555,36 @@ body::before {
 
 .care-card h4 i {
   color: #2563eb;
+}
+
+.care-icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.care-icon-chip--risk {
+  background: rgba(59, 130, 246, 0.14);
+  color: #2563eb;
+}
+
+.care-icon-chip--tests {
+  background: rgba(20, 184, 166, 0.14);
+  color: #0f766e;
+}
+
+.care-icon-chip--symptoms {
+  background: rgba(249, 115, 22, 0.14);
+  color: #c2410c;
+}
+
+.care-icon-chip--diet {
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
 }
 
 .care-content {
@@ -1531,6 +1603,22 @@ body::before {
 
 .care-content li + li {
   margin-top: 8px;
+}
+
+.result-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 22px;
+}
+
+.result-download-btn {
+  width: auto;
+  min-width: 240px;
+}
+
+.result-download-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* CHATBOT STYLES (MEDICAL ASSISTANT) */

@@ -301,6 +301,11 @@
               <!-- Filled dynamically -->
             </div>
 
+            <div class="screening-disclaimer">
+              <i class="fas fa-triangle-exclamation"></i>
+              <span>Screening only. This AI result is not a medical diagnosis and should be reviewed by a healthcare professional.</span>
+            </div>
+
             <div class="result-grid">
               <div class="result-badge-card">
                 <h3>AI Prediction</h3>
@@ -353,22 +358,40 @@
             </div>
 
             <div class="care-grid">
-              <div class="care-card">
-                <h4><i class="fas fa-shield-heart"></i> Risk Interpretation</h4>
+              <div class="care-card care-card--risk">
+                <h4>
+                  <span class="care-icon-chip care-icon-chip--risk"><i class="fas fa-shield-heart"></i></span>
+                  <span>Risk Interpretation</span>
+                </h4>
                 <div class="care-content" id="riskInterpretation"></div>
               </div>
-              <div class="care-card">
-                <h4><i class="fas fa-flask"></i> Suggested Tests</h4>
+              <div class="care-card care-card--tests">
+                <h4>
+                  <span class="care-icon-chip care-icon-chip--tests"><i class="fas fa-flask"></i></span>
+                  <span>Suggested Tests</span>
+                </h4>
                 <div class="care-content" id="suggestedTests"></div>
               </div>
-              <div class="care-card">
-                <h4><i class="fas fa-stethoscope"></i> Symptom Checklist</h4>
+              <div class="care-card care-card--symptoms">
+                <h4>
+                  <span class="care-icon-chip care-icon-chip--symptoms"><i class="fas fa-stethoscope"></i></span>
+                  <span>Symptom Checklist</span>
+                </h4>
                 <div class="care-content" id="symptomChecklist"></div>
               </div>
-              <div class="care-card">
-                <h4><i class="fas fa-apple-whole"></i> Diet Support</h4>
+              <div class="care-card care-card--diet">
+                <h4>
+                  <span class="care-icon-chip care-icon-chip--diet"><i class="fas fa-apple-whole"></i></span>
+                  <span>Diet Support</span>
+                </h4>
                 <div class="care-content" id="dietGuidance"></div>
               </div>
+            </div>
+
+            <div class="result-tools">
+              <button class="btn btn-secondary result-download-btn" id="downloadSummaryBtn" disabled>
+                <i class="fas fa-file-arrow-down"></i> Download Result Summary
+              </button>
             </div>
 
             <div class="medical-notes">
