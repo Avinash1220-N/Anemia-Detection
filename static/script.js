@@ -16,6 +16,8 @@ const confidenceText = document.getElementById("confidence");
 const confidenceFill = document.getElementById("confidenceFill");
 const meterValue = document.getElementById("meterValue");
 const resultIndicator = document.getElementById("resultIndicator");
+const diagnosisBadge = document.getElementById("diagnosisBadge");
+const riskLevel = document.getElementById("riskLevel");
 const clinicalSummary = document.getElementById("clinicalSummary");
 const medicalNotes = document.getElementById("medicalNotes");
 const loadingOverlay = document.getElementById("loadingOverlay");
@@ -58,7 +60,6 @@ fileInput?.addEventListener("change", (e) => {
 // PREDICT
 // =============================
 detectBtn?.addEventListener("click", async () => {
-
     if (!selectedFile) {
         alert("Upload image first.");
         return;
@@ -70,7 +71,6 @@ detectBtn?.addEventListener("click", async () => {
     formData.append("file", selectedFile);
 
     try {
-
         const response = await fetch(`${API_BASE_URL}/predict`, {
             method: "POST",
             body: formData
@@ -83,7 +83,6 @@ detectBtn?.addEventListener("click", async () => {
         }
 
         showResults(data);
-
     } catch (err) {
         console.error(err);
         alert("Server error: " + err.message);
@@ -92,37 +91,137 @@ detectBtn?.addEventListener("click", async () => {
     loadingOverlay.style.display = "none";
 });
 
-
 // =============================
 // SHOW RESULTS
 // =============================
-function showResults(data) {
+function getSeverityLabel(data, isAnemic) {
+    if (data.severity) return data.severity;
+    return isAnemic ? "Mild" : "Normal";
+}
 
+function getResultTheme(isAnemic, severity) {
+    const normalizedSeverity = severity.toLowerCase();
+
+    if (!isAnemic) {
+        return {
+            badgeClass: "diagnosis-badge",
+            riskClass: "risk-pill normal",
+            indicatorClass: "result-indicator normal",
+            indicatorText: "Normal Hemoglobin Appearance",
+            gaugeColor: "linear-gradient(90deg, #22c55e, #84cc16)"
+        };
+    }
+
+    if (normalizedSeverity === "severe") {
+        return {
+            badgeClass: "diagnosis-badge severe",
+            riskClass: "risk-pill severe",
+            indicatorClass: "result-indicator anemic",
+            indicatorText: "High-Risk Anemia Pattern",
+            gaugeColor: "linear-gradient(90deg, #f97316, #dc2626)"
+        };
+    }
+
+    if (normalizedSeverity === "moderate") {
+        return {
+            badgeClass: "diagnosis-badge moderate",
+            riskClass: "risk-pill moderate",
+            indicatorClass: "result-indicator anemic",
+            indicatorText: "Moderate Anemia Risk Pattern",
+            gaugeColor: "linear-gradient(90deg, #eab308, #f97316)"
+        };
+    }
+
+    return {
+        badgeClass: "diagnosis-badge mild",
+        riskClass: "risk-pill mild",
+        indicatorClass: "result-indicator anemic",
+        indicatorText: "Mild Anemia Risk Pattern",
+        gaugeColor: "linear-gradient(90deg, #84cc16, #eab308)"
+    };
+}
+
+function buildClinicalNotes(result, severity, confidencePercent) {
+    if (result.toLowerCase() === "normal") {
+        return `
+            <p>The uploaded conjunctiva image is more consistent with a normal appearance on this AI screening model.</p>
+            <ul>
+                <li>Estimated screening confidence: ${confidencePercent}%.</li>
+                <li>Continue balanced intake of iron, folate, vitamin B12, and protein.</li>
+                <li>Arrange clinician review if symptoms such as fatigue, pallor, dizziness, or shortness of breath are present.</li>
+                <li>This tool supports screening only and does not replace laboratory testing or medical diagnosis.</li>
+            </ul>
+        `;
+    }
+
+    if (severity.toLowerCase() === "severe") {
+        return `
+            <p>The model detected a high-risk anemia pattern that should be reviewed promptly by a clinician.</p>
+            <ul>
+                <li>Recommended next step: CBC, hemoglobin, hematocrit, ferritin, and iron profile testing.</li>
+                <li>Assess for significant fatigue, palpitations, breathlessness, chest discomfort, or fainting.</li>
+                <li>Urgent medical review is appropriate if symptoms are worsening or severe.</li>
+                <li>Please confirm this screening result with clinical examination and laboratory testing.</li>
+            </ul>
+        `;
+    }
+
+    if (severity.toLowerCase() === "moderate") {
+        return `
+            <p>The model suggests a moderate anemia pattern and follow-up testing would be appropriate.</p>
+            <ul>
+                <li>Recommended next step: CBC and hemoglobin evaluation with iron studies if advised by a clinician.</li>
+                <li>Review dietary iron intake, menstrual history, recent illness, or chronic blood loss risk factors.</li>
+                <li>Monitor symptoms such as fatigue, headaches, dizziness, or reduced exercise tolerance.</li>
+                <li>Use this result as a screening prompt rather than a final diagnosis.</li>
+            </ul>
+        `;
+    }
+
+    return `
+        <p>The model suggests a mild anemia pattern that may warrant non-urgent clinical follow-up.</p>
+        <ul>
+            <li>Recommended next step: consider CBC and hemoglobin testing if symptoms or risk factors are present.</li>
+            <li>Supportive measures may include reviewing diet for iron, folate, and vitamin B12 intake.</li>
+            <li>Watch for ongoing fatigue, dizziness, pallor, or weakness.</li>
+            <li>Please discuss the result with a healthcare professional for confirmation.</li>
+        </ul>
+    `;
+}
+
+function showResults(data) {
     const confidencePercent = (data.confidence * 100).toFixed(2);
     const isAnemic = data.result.toLowerCase() === "anemic";
+    const severity = getSeverityLabel(data, isAnemic);
+    const theme = getResultTheme(isAnemic, severity);
 
     resultText.innerText = data.result;
     confidenceText.innerText = confidencePercent + "%";
 
+    if (diagnosisBadge) {
+        diagnosisBadge.innerText = data.result;
+        diagnosisBadge.className = theme.badgeClass;
+    }
+
+    if (riskLevel) {
+        riskLevel.innerText = severity;
+        riskLevel.className = theme.riskClass;
+    }
+
     confidenceFill.style.width = confidencePercent + "%";
+    confidenceFill.style.background = theme.gaugeColor;
     meterValue.innerText = confidencePercent + "%";
 
-    resultIndicator.innerHTML =
-        isAnemic ? "⚠️ Anemia Detected" : "✅ Normal Hemoglobin Appearance";
+    resultIndicator.className = theme.indicatorClass;
+    resultIndicator.textContent = theme.indicatorText;
 
-    clinicalSummary.innerText =
-        isAnemic ?
-        "Possible anemia detected. Please consult a clinician." :
-        "No anemia pattern detected.";
+    clinicalSummary.innerText = isAnemic
+        ? `Possible ${severity.toLowerCase()} anemia pattern detected. Please consult a clinician.`
+        : "No anemia pattern detected on this screening image.";
 
-    medicalNotes.innerHTML =
-        isAnemic ?
-        "<ul><li>Consider CBC test</li><li>Check hemoglobin level</li></ul>" :
-        "<ul><li>Maintain healthy diet</li><li>Regular health checkups</li></ul>";
-
+    medicalNotes.innerHTML = buildClinicalNotes(data.result, severity, confidencePercent);
     resultsSection.style.display = "block";
 }
-
 
 // =============================
 // CHATBOT
@@ -183,7 +282,6 @@ chatbotInput?.addEventListener("keypress", (e) => {
 });
 
 async function sendMessage() {
-
     const msg = chatbotInput.value.trim();
     if (!msg) return;
 
@@ -192,7 +290,6 @@ async function sendMessage() {
     displayTyping(true);
 
     try {
-
         const response = await fetch(`${API_BASE_URL}/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -204,19 +301,14 @@ async function sendMessage() {
         if (!response.ok) throw new Error(data.error);
 
         displayMessage(data.reply, "bot");
-
     } catch (err) {
-
         displayMessage("Server error: " + err.message, "bot");
-
     } finally {
         displayTyping(false);
     }
-
 }
 
 function displayMessage(text, sender) {
-
     const div = document.createElement("div");
     div.classList.add("chatbot-message", sender);
 
