@@ -40,6 +40,14 @@ SYSTEM_PROMPT = (
 )
 
 
+def warm_up_model():
+    dummy_input = np.zeros((1, 64, 64, 3), dtype=np.float32)
+    MODEL.predict(dummy_input, verbose=0)
+
+
+warm_up_model()
+
+
 @app.route("/")
 def home():
     return jsonify({"status": "ok", "message": "AI-Powered Anemia Detection System API"})
@@ -57,7 +65,7 @@ def predict():
     img = np.array(img) / 255.0
     img = np.expand_dims(img, axis=0)
 
-    prediction = MODEL.predict(img)
+    prediction = MODEL.predict(img, verbose=0)
     value = prediction[0][0]
 
     if value > 0.5:
